@@ -81,6 +81,12 @@ variable "vpc_link_target_port" {
   default     = 443
 }
 
+variable "vpc_link_target_health_check_path" {
+  description = "VPC link load balancer target health check path"
+  type        = string
+  default     = "/"
+}
+
 variable "create_api_key" {
   description = "Boolean variable that's evaluate the creation of an api key"
   type        = bool
@@ -97,12 +103,108 @@ variable "allowed_ips" {
   default     = []
 }
 
+variable "enable_custom_authorizer" {
+  type    = bool
+  default = false
+}
+
 variable "custom_authorizers" {
   description = "Custom authorizer variables"
   default     = []
   type = list(object({
     name                          = string
+    runtime                       = string
     custom_authorizer_lambda_code = string
+    jwks_uri                      = string
+    audience                      = string
+    token_issuer                  = string
   }))
 
+}
+
+variable "alarm_sns_topics" {
+  default     = []
+  description = "Alarm topics to create and alert on API Gateway service metrics. Leaving empty disables all alarms."
+}
+
+variable "alarm_apigw_5xx_errors_threshold" {
+  description = "Max threshold of HTTP 500 errors allowed in a 5 minutes interval"
+  default     = 10
+}
+
+variable "alarm_apigw_4xx_errors_threshold" {
+  description = "Max threshold of HTTP 4000 errors allowed in a 5 minutes interval"
+  default     = 10
+}
+
+variable "alarm_apigw_integration_latency_threshold" {
+  description = "Max threshold of Integration latency(ms) allowed in a 5 minutes interval"
+  default     = 1000
+}
+
+variable "alarm_apigw_latency_threshold" {
+  description = "Max threshold of latency(ms) allowed in a 5 minutes interval"
+  default     = 1000
+}
+
+variable "alarm_apigw_integration_latency_evaluation" {
+  description = "Api Gateway integration latency evaluation periods"
+  default     = 2
+}
+
+variable "alarm_apigw_integration_latency_datapoints" {
+  description = "Api Gateway integration latency data points to evaluate"
+  default     = 2
+}
+
+variable "alarm_apigw_latency_evaluation" {
+  description = "Api Gateway latency evaluation periods"
+  default     = 2
+}
+
+variable "alarm_apigw_latency_datapoints" {
+  description = "Api Gateway latency data points to evaluate"
+  default     = 2
+}
+
+variable "vpc_link_subnets" {
+  description = "subnets for vpc link load balancer"
+  default     = []
+  type        = list(string)
+}
+
+variable "vpc_id" {
+  description = "vpc for load balancer"
+  default     = ""
+  type        = string
+}
+
+variable "vpc_link_id" {
+  description = "vpc link id for the api gateway integration"
+  default     = ""
+  type        = string
+}
+
+
+variable "binary_media_types" {
+  description = "binary media types for the rest api"
+  default     = []
+  type        = list(string)
+}
+
+variable "web_acl_arn" {
+  description = "regional waf acl arn, attached to the rest api endpoint"
+  default     = ""
+  type        = string
+}
+
+variable "attach_waf" {
+  description = "attach waf to the rest api endpoint"
+  default     = false
+  type        = bool
+}
+
+variable "redeployment_sha" {
+  default = ""
+  type    = string
 }
