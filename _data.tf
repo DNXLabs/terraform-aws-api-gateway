@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
 data "aws_vpc" "current" {}
 
 data "aws_subnets" "current" {
@@ -7,7 +9,7 @@ data "aws_subnets" "current" {
 }
 
 data "aws_route53_zone" "hosted_zones" {
-  for_each = { for domain in var.domains : domain.domain => domain }
+  for_each = { for domain in var.domains : domain.domain => domain if var.create_dns_record }
   name     = each.value.zone_name
 }
 

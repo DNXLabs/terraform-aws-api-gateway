@@ -8,6 +8,12 @@ variable "api_type" {
   type        = string
 }
 
+variable "api_key_source" {
+  description = "Source for the API key"
+  type        = string
+  default     = "HEADER"
+}
+
 variable "api_description" {
   description = "Description for the API"
   type        = string
@@ -57,8 +63,8 @@ variable "routes" {
     integration_type = string
     integration_uri  = string
     route_mapping    = string
-    path_parameters  = list(string)
-    connection_type  = string
+    path_parameters  = optional(list(string))
+    connection_type  = optional(string)
   }))
 
 }
@@ -69,8 +75,26 @@ variable "create_vpc_link" {
   default     = false
 }
 
+variable "target_type" {
+  description = "The type of target for the rest api integration"
+  type        = string
+  default     = "alb"
+}
+
+variable "lambda_name" {
+  description = "The integration lambda (if lambda integration type) for permissions"
+  type        = string
+  default     = ""
+}
+
 variable "vpc_link_target_id" {
   description = "ARN of the resource to attach for the VPC link load balancer target"
+  type        = string
+  default     = ""
+}
+
+variable "vpc_link_target_name" {
+  description = "Name of the resource to attach for the VPC link load balancer target"
   type        = string
   default     = ""
 }
@@ -79,6 +103,12 @@ variable "vpc_link_target_port" {
   description = "TCP Port of the resource to attach for the VPC link load balancer target"
   type        = number
   default     = 443
+}
+
+variable "vpc_link_target_health_check_path" {
+  description = "VPC link load balancer target health check path"
+  type        = string
+  default     = "/"
 }
 
 variable "create_api_key" {
@@ -97,12 +127,191 @@ variable "allowed_ips" {
   default     = []
 }
 
+variable "enable_custom_authorizer" {
+  type    = bool
+  default = false
+}
+
 variable "custom_authorizers" {
   description = "Custom authorizer variables"
   default     = []
   type = list(object({
     name                          = string
+    runtime                       = string
     custom_authorizer_lambda_code = string
+    query_param                   = optional(string)
+    jwks_uri                      = optional(string)
+    audience                      = optional(string)
+    token_issuer                  = optional(string)
+    variables                     = optional(map(string))
   }))
+}
 
+variable "api_key_required" {
+  type    = bool
+  default = false
+}
+
+variable "alarm_sns_topics" {
+  default     = []
+  description = "Alarm topics to create and alert on API Gateway service metrics. Leaving empty disables all alarms."
+}
+
+variable "alarm_apigw_5xx_errors_threshold" {
+  description = "Anomaly detection threshold for HTTP 500 errors"
+  default     = 20
+}
+
+variable "alarm_apigw_4xx_errors_threshold" {
+  description = "Anomaly detection threshold for HTTP 400 errors"
+  default     = 20
+}
+
+
+variable "alarm_apigw_5xx_evaluation" {
+  description = "Api Gateway 5xx evaluation periods"
+  default     = 4
+}
+
+variable "alarm_apigw_5xx_datapoints" {
+  description = "Api Gateway 5xx data points to evaluate"
+  default     = 4
+}
+
+variable "alarm_apigw_5xx_period" {
+    description = "Api Gateway 5xx period in seconds"
+    default     = 300
+}
+
+variable "alarm_apigw_5xx_statistic" {
+  description = "Api Gateway 5xx statistic"
+  default     = "Sum"
+  type        = string
+}
+
+variable "alarm_apigw_4xx_evaluation" {
+  description = "Api Gateway 4xx evaluation periods"
+  default     = 4
+}
+
+variable "alarm_apigw_4xx_datapoints" {
+  description = "Api Gateway 4xx data points to evaluate"
+  default     = 4
+}
+
+variable "alarm_apigw_4xx_period" {
+  description = "Api Gateway 5xx period in seconds"
+  default     = 300
+}
+
+variable "alarm_apigw_4xx_statistic" {
+  description = "Api Gateway 5xx statistic"
+  default     = "Sum"
+  type        = string
+}
+
+variable "alarm_apigw_integration_latency_threshold" {
+  description = "Anomaly detection threshold for Integration latency"
+  default     = 15000
+}
+
+variable "alarm_apigw_latency_threshold" {
+  description = "Threshold for api gateway latency"
+  default     = 15000
+}
+
+variable "alarm_apigw_integration_latency_evaluation" {
+  description = "Api Gateway integration latency evaluation periods"
+  default     = 4
+}
+
+variable "alarm_apigw_integration_latency_datapoints" {
+  description = "Api Gateway integration latency data points to evaluate"
+  default     = 4
+}
+
+variable "alarm_apigw_integration_latency_period" {
+  description = "Api Gateway integration latency period in seconds"
+  default     = 300
+}
+
+variable "alarm_apigw_integration_latency_statistic" {
+  description = "Api Gateway integration latency statistic"
+  default     = "Maximum"
+  type        = string
+}
+
+variable "alarm_apigw_latency_evaluation" {
+  description = "Api Gateway latency evaluation periods"
+  default     = 4
+}
+
+variable "alarm_apigw_latency_datapoints" {
+  description = "Api Gateway latency data points to evaluate"
+  default     = 4
+}
+
+variable "alarm_apigw_latency_period" {
+  description = "Api Gateway integration latency period in seconds"
+  default     = 300
+}
+
+variable "alarm_apigw_latency_statistic" {
+  description = "Api Gateway integration latency statistic"
+  default     = "Maximum"
+  type        = string
+}
+
+variable "vpc_link_subnets" {
+  description = "subnets for vpc link load balancer"
+  default     = []
+  type        = list(string)
+}
+
+variable "vpc_id" {
+  description = "vpc for load balancer"
+  default     = ""
+  type        = string
+}
+
+variable "vpc_link_id" {
+  description = "vpc link id for the api gateway integration"
+  default     = ""
+  type        = string
+}
+
+
+variable "binary_media_types" {
+  description = "binary media types for the rest api"
+  default     = []
+  type        = list(string)
+}
+
+variable "web_acl_arn" {
+  description = "regional waf acl arn, attached to the rest api endpoint"
+  default     = ""
+  type        = string
+}
+
+variable "attach_waf" {
+  description = "attach waf to the rest api endpoint"
+  default     = false
+  type        = bool
+}
+
+variable "redeployment_sha" {
+  default = ""
+  type    = string
+}
+
+variable "attach_resource_policy" {
+  description = "set up resource policy for api gateway"
+  default     = false
+  type        = bool
+}
+
+variable "enable_vpc_link_v2" {
+  type = bool
+  default = false
+  description = "Enable VPC Link v2 for REST API integrations"
 }
